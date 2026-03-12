@@ -150,16 +150,17 @@ go(“auth”);
 }
 
 async function doSignIn(){
-if(!sb){S.msg={t:“err”,v:“Not connected.”};render();return;}
+if(!sb){S.msg={t:”err”,v:”Not connected.”};render();return;}
+if(!S.email||!S.pass){S.msg={t:”err”,v:”Please fill in all fields.”};render();return;}
 S.loading=true;S.msg=null;render();
 try{
 var r=await sb.auth.signInWithPassword({email:S.email,password:S.pass});
 if(r.error)throw r.error;
-S.user=r.data.user;S.demo=false;
+S.user=r.data.user;S.demo=false;S.loading=false;
 await loadData();
 go(“home”);
 }catch(e){
-S.msg={t:“err”,v:e.message||“Sign in failed.”};
+S.msg={t:”err”,v:e.message||”Sign in failed.”};
 S.loading=false;render();
 }
 }
@@ -185,12 +186,16 @@ S.user={id:“demo”,email:DEMO_EMAIL};
 S.demo=true;
 S.budgets=copyObj(DEF_B);
 S.spending={food:65,shopping:90,transport:30,entertain:15,health:20,bills:100,personal:10};
+var now=new Date();
+var d0=now.toLocaleDateString();
+var d1=new Date(now-86400000).toLocaleDateString();
+var d2=new Date(now-2*86400000).toLocaleDateString();
 S.txns=[
-{id:1,amt:12.50,cat:“food”,note:“Lunch”,date:“Today”,over:false},
-{id:2,amt:45.00,cat:“shopping”,note:“New shirt”,date:“Today”,over:true},
-{id:3,amt:3.50,cat:“transport”,note:“Bus fare”,date:“Yesterday”,over:false},
-{id:4,amt:8.00,cat:“food”,note:“Coffee”,date:“Yesterday”,over:false},
-{id:5,amt:25.00,cat:“entertain”,note:“Cinema”,date:“2 days ago”,over:false}
+{id:1,amt:12.50,cat:”food”,note:”Lunch”,date:d0,over:false},
+{id:2,amt:45.00,cat:”shopping”,note:”New shirt”,date:d0,over:true},
+{id:3,amt:3.50,cat:”transport”,note:”Bus fare”,date:d1,over:false},
+{id:4,amt:8.00,cat:”food”,note:”Coffee”,date:d1,over:false},
+{id:5,amt:25.00,cat:”entertain”,note:”Cinema”,date:d2,over:false}
 ];
 S.tempB=copyObj(S.budgets);
 S.loading=false;
@@ -328,7 +333,7 @@ var hr=new Date().getHours();
 var grt=hr<12?“Good morning”:“Good afternoon”;
 if(hr>=17)grt=“Good evening”;
 var gd=d(””,grt+”!”);
-gd.style.cssText=“font-size:13px;color:var(–t2);margin-bottom:14px;font-weight:500”;
+gd.style.cssText=“font-size:13px;color:var(--t2);margin-bottom:14px;font-weight:500”;
 w.appendChild(gd);
 var ts=totalSpent(),r=remaining(),ov=isOverAll();
 var hero=d(“hero”);
@@ -361,13 +366,13 @@ ico.style.cssText=“width:34px;height:34px;border-radius:9px;background:”+cat
 var info=d(””);
 var nm=d(””,cat.label);nm.style.cssText=“font-size:13px;font-weight:600”;
 var st=d(””,cov?”$”+(sp-bu).toFixed(2)+” over”:”$”+(bu-sp).toFixed(2)+” left”);
-st.style.cssText=“font-size:11px;color:”+(cov?”#f87171”:“var(–t3)”)+”;margin-top:1px”;
+st.style.cssText=“font-size:11px;color:”+(cov?”#f87171”:“var(--t3)”)+”;margin-top:1px”;
 info.appendChild(nm);info.appendChild(st);
 var right=d(””);
 var amEl=d(””,”$”+sp.toFixed(0));
 amEl.style.cssText=“font-size:17px;font-weight:700;color:”+(cov?”#f87171”:”#eeeef5”)+”;text-align:right”;
 var ofEl=d(””,“of $”+bu);
-ofEl.style.cssText=“font-size:11px;color:var(–t3);text-align:right”;
+ofEl.style.cssText=“font-size:11px;color:var(--t3);text-align:right”;
 right.appendChild(amEl);right.appendChild(ofEl);
 var row=d(””);
 row.style.cssText=“display:flex;align-items:center;gap:10px;margin-bottom:10px”;
@@ -418,7 +423,7 @@ var left=d(””);left.style.cssText=“display:flex;align-items:center;gap:9px
 var ico=d(ct?ct.label.charAt(0):”?”);
 ico.style.cssText=“width:32px;height:32px;border-radius:8px;background:”+(ct?ct.color+“18”:”#a78bfa18”)+”;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:”+(ct?ct.color:”#a78bfa”);
 ico.textContent=ct?ct.label.charAt(0):”?”;
-var lbl2=d(””,ct?ct.label:””);lbl2.style.cssText=“font-size:13px;color:var(–t2)”;
+var lbl2=d(””,ct?ct.label:””);lbl2.style.cssText=“font-size:13px;color:var(--t2)”;
 left.appendChild(ico);left.appendChild(lbl2);
 var amt2=d(””,”$”+Number(t.amt).toFixed(2));
 amt2.style.cssText=“font-size:15px;font-weight:700;color:”+(t.over?”#f87171”:”#eeeef5”);
@@ -447,7 +452,7 @@ ico.style.cssText=“width:34px;height:34px;border-radius:9px;background:”+(ct
 ico.textContent=ct?ct.label.charAt(0):”?”;
 var info=d(””);
 var n1=d(””,ct?ct.label:””);n1.style.cssText=“font-size:13px;font-weight:500”;
-var n2=d(””,t.date+(t.note?” - “+t.note:””));n2.style.cssText=“font-size:11px;color:var(–t3);margin-top:1px”;
+var n2=d(””,t.date+(t.note?” - “+t.note:””));n2.style.cssText=“font-size:11px;color:var(--t3);margin-top:1px”;
 info.appendChild(n1);info.appendChild(n2);
 left.appendChild(ico);left.appendChild(info);
 var right=d(””);
@@ -463,11 +468,11 @@ var rb=el(“button”,“btn btn-g”,“Reset Week”);rb.style.marginTop=“1
 rb.onclick=function(){
 if(confirm(“Reset all spending for a new week?”)){
 S.spending=copyObj(DEF_S);S.txns=[];
-saveAllSpending().then(function(){
+render();
 if(sb&&S.user&&!S.demo){
-sb.from(“transactions”).delete().eq(“user_id”,S.user.id).then(function(){render();});
-}else{render();}
-});
+saveAllSpending();
+sb.from(“transactions”).delete().eq(“user_id”,S.user.id).catch(function(e){console.error(“delete txns”,e);});
+}
 }
 };
 w.appendChild(rb);
@@ -480,7 +485,7 @@ var s=d(“screen”),w=d(“pad”);
 w.appendChild(d(“pg-title”,“Settings”));
 w.appendChild(d(“pg-sub”,“Account and budgets.”));
 var ac=d(“card”);
-var albl=d(””,“Account”);albl.style.cssText=“font-size:12px;font-weight:700;color:var(–t2);margin-bottom:10px”;
+var albl=d(””,“Account”);albl.style.cssText=“font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px”;
 var arow=d(””);arow.style.cssText=“display:flex;align-items:center;gap:8px;margin-bottom:14px”;
 var dot=d(””);dot.style.cssText=“width:7px;height:7px;border-radius:50%;background:#34d399;flex-shrink:0”;
 var atxt=d(””,S.demo?“Demo Account”:(S.user?S.user.email:””));
@@ -503,7 +508,7 @@ var row=d(””);row.style.cssText=“display:flex;align-items:center;gap:8px;m
 var ico=d(””);
 ico.style.cssText=“width:26px;height:26px;border-radius:7px;background:”+cat.color+“18;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:”+cat.color;
 ico.textContent=cat.label.charAt(0);
-var nm=d(””,cat.label);nm.style.cssText=“font-size:12px;font-weight:600;color:var(–t2)”;
+var nm=d(””,cat.label);nm.style.cssText=“font-size:12px;font-weight:600;color:var(--t2)”;
 row.appendChild(ico);row.appendChild(nm);
 var ci=el(“input”);ci.type=“number”;ci.value=S.tempB[cat.id];
 ci.oninput=function(e){var u=copyObj(S.tempB);u[cat.id]=+e.target.value;S.tempB=u;};
@@ -522,41 +527,45 @@ function guiltOverlay(){
 var g=S.guilt;
 var ov=d(“overlay”);
 var modal=d(“modal”);
-var handle=d(””);handle.style.cssText=“width:32px;height:3px;background:var(–br);border-radius:2px;margin:0 auto 18px”;
+var handle=d(””);handle.style.cssText=“width:32px;height:3px;background:var(--br);border-radius:2px;margin:0 auto 18px”;
 modal.appendChild(handle);
 var head=d(””,g.catOv?“Over on “+g.catName:“Weekly budget exceeded”);
 head.style.cssText=“font-size:20px;font-weight:700;text-align:center;margin-bottom:5px”;
 var sub=d(””,“Here is what happened”);
-sub.style.cssText=“text-align:center;color:var(–t2);font-size:13px;margin-bottom:14px”;
+sub.style.cssText=“text-align:center;color:var(--t2);font-size:13px;margin-bottom:14px”;
 modal.appendChild(head);modal.appendChild(sub);
-var bd=d(””);bd.style.cssText=“background:var(–s2);border-radius:12px;padding:12px 14px;margin-bottom:14px”;
+var bd=d(””);bd.style.cssText=“background:var(--s2);border-radius:12px;padding:12px 14px;margin-bottom:14px”;
 if(g.catOv){
-var r1=d(””);r1.style.cssText=“display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(–br);font-size:13px”;
-var l1=d(””,g.catName);l1.style.color=“var(–t2)”;
+var r1=d(””);r1.style.cssText=“display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--br);font-size:13px”;
+var l1=d(””,g.catName);l1.style.color=“var(--t2)”;
 var v1=d(””,”$”+g.catSpent.toFixed(2)+” / $”+g.catBudget);v1.style.cssText=“color:#f87171;font-weight:600”;
 r1.appendChild(l1);r1.appendChild(v1);bd.appendChild(r1);
 }
 if(g.totOv){
 var r2=d(””);r2.style.cssText=“display:flex;justify-content:space-between;padding:5px 0;font-size:13px”;
-var l2=d(””,“Weekly Total”);l2.style.color=“var(–t2)”;
+var l2=d(””,“Weekly Total”);l2.style.color=“var(--t2)”;
 var v2=d(””,”$”+g.totSpent.toFixed(2)+” / $”+S.budgets.total);v2.style.cssText=“color:#f87171;font-weight:600”;
 r2.appendChild(l2);r2.appendChild(v2);bd.appendChild(r2);
 }
 modal.appendChild(bd);
 var nlbl=d(””,“Add a note to continue (min 5 chars)”);
-nlbl.style.cssText=“font-size:12px;font-weight:600;color:var(–t2);margin-bottom:5px”;
+nlbl.style.cssText=“font-size:12px;font-weight:600;color:var(--t2);margin-bottom:5px”;
 modal.appendChild(nlbl);
 var ta=document.createElement(“textarea”);
 ta.rows=2;ta.placeholder=“What happened?”;ta.value=S.excuse;
-ta.style.cssText=“width:100%;padding:11px 13px;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;border:1.5px solid var(–br);background:var(–s2);color:var(–t1);resize:none”;
-var okb=el(“button”,“btn btn-p”,“Got it”);
-okb.style.marginTop=“0”;
-okb.style.opacity=S.excuse.trim().length>=5?“1”:“0.4”;
+ta.style.cssText=“width:100%;padding:11px 13px;border-radius:10px;font-size:13px;font-family:inherit;margin-bottom:10px;border:1.5px solid var(--br);background:var(--s2);color:var(--t1);resize:none”;
+var okb=el(“button”,”btn btn-p”,”Got it”);
+okb.style.marginTop=”0”;
+var excuseOk=S.excuse.trim().length>=5;
+okb.style.opacity=excuseOk?”1”:”0.4”;
+okb.disabled=!excuseOk;
 ta.oninput=function(e){
 S.excuse=e.target.value;
-okb.style.opacity=e.target.value.trim().length>=5?“1”:“0.4”;
+var ok=e.target.value.trim().length>=5;
+okb.style.opacity=ok?”1”:”0.4”;
+okb.disabled=!ok;
 };
-okb.onclick=function(){if(S.excuse.trim().length>=5){S.guilt=null;render();}};
+okb.onclick=function(){S.guilt=null;render();};
 modal.appendChild(ta);modal.appendChild(okb);
 ov.appendChild(modal);return ov;
 }
